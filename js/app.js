@@ -8,8 +8,26 @@ class App {
 		this.mouse = { x: 0, y: 0 }
 		this.animation = {
 			sphere: {
-				thetaLength: -0.05,
-				phiLength: -0.05
+				thetaLength: 0.05,
+				phiLength: 0.05
+			},
+			cone: {
+				radialSegments: 1,
+				thetaLength: 0.05
+			},
+			cylinder: {
+				radiusTop: 0.3,
+				radiusBottom: 0.3,
+				radialSegments: 1,
+				thetaLength: 0.05
+			},
+			torus: {
+				arc: 0.05
+			},
+			cube: {
+				width: 0.3,
+				height: 0.3,
+				depth: 0.3
 			}
 		}
 
@@ -41,8 +59,8 @@ class App {
 
 		// set events
 		window.addEventListener('resize', this.resize.bind(this))
-		// window.addEventListener('mousemove', this.mouseMove.bind(this))
-		// window.addEventListener('mousewheel', this.scroll.bind(this), { passive: true })
+		window.addEventListener('mousemove', this.mouseMove.bind(this))
+		window.addEventListener('mousewheel', this.scroll.bind(this), { passive: true })
 
 		// resize and render
 		this.resize()
@@ -56,10 +74,13 @@ class App {
 				this.geometry = new THREE.SphereGeometry(32, 32, 32, 0, Math.PI * 2, 0, Math.PI)
 				break
 			case 'cone':
-				this.geometry = new THREE.ConeGeometry(32, 64, 32)
+				this.geometry = new THREE.ConeGeometry(32, 64, 32, 1, false, 0, Math.PI * 2)
 				break
 			case 'cylinder':
-				this.geometry = new THREE.CylinderGeometry(32, 32, 64, 32)
+				this.geometry = new THREE.CylinderGeometry(10, 40, 64, 64, 1, false, 0, Math.PI * 2)
+				break
+			case 'torus':
+				this.geometry = new THREE.TorusGeometry(12, 3, 21, 24, Math.PI * 2)
 				break
 			case 'cube':
 			default:
@@ -86,10 +107,16 @@ class App {
 				this.animateSphere(params, rotation)
 				break
 			case 'ConeGeometry':
+				this.animateCone(params, rotation)
 				break
 			case 'CylinderGeometry':
+				this.animateCylinder(params, rotation)
+				break
+			case 'TorusGeometry':
+				this.animateTorus(params, rotation)
 				break
 			case 'BoxGeometry':
+				this.animateCube(params, rotation)
 				break
 		}
 
@@ -101,8 +128,8 @@ class App {
 
 	animateSphere(params, rotation) {
 
-		params = this.updateParameter('thetaLength', params, 'sphere', 0.01, Math.PI * 2)
-		params = this.updateParameter('phiLength', params, 'sphere', 0.01, Math.PI * 2)
+		params = this.updateParameter('thetaLength', params, 'sphere', 0.01, Math.PI * 2, 'alternate')
+		params = this.updateParameter('phiLength', params, 'sphere', 0.01, Math.PI * 2, 'alternate')
 
 		this.shape.geometry.dispose()
 
@@ -113,7 +140,63 @@ class App {
 
 	}
 
-	updateParameter(param, parameters, shape, min, max) {
+	animateCone(params, rotation) {
+
+		// params = this.updateParameter('radialSegments', params, 'cone', 3, 64, 'alternate')
+		params = this.updateParameter('thetaLength', params, 'cone', 0.1, Math.PI * 2, 'alternate')
+
+		this.shape.geometry.dispose()
+
+		this.shape.geometry = new THREE.ConeGeometry(
+			params.radius, params.height, params.radialSegments, params.heightSegments,
+			params.openEnded, params.thetaStart, params.thetaLength
+		)
+
+	}
+
+	animateCylinder(params, rotation) {
+
+		// params = this.updateParameter('radiusTop', params, 'cylinder', 10, 40, 'alternate')
+		params = this.updateParameter('radiusBottom', params, 'cylinder', 10, 40, 'alternate')
+		// params = this.updateParameter('thetaLength', params, 'cylinder', 0.1, Math.PI * 2, 'alternate')
+
+		this.shape.geometry.dispose()
+
+		this.shape.geometry = new THREE.CylinderGeometry(
+			params.radiusTop, params.radiusBottom, params.height, params.radialSegments, 
+			params.heightSegments, params.openEnded, params.thetaStart, params.thetaLength
+		)
+
+	}
+
+	animateTorus(params, rotation) {
+
+		params = this.updateParameter('arc', params, 'torus', 0.1, Math.PI * 2, 'normal')
+
+		this.shape.geometry.dispose()
+
+		this.shape.geometry = new THREE.TorusGeometry(
+			params.radius, params.tube, params.radialSegments,
+			params.tubularSegments, params.arc
+		)
+
+	}
+
+	animateCube(params, rotation) {
+
+		params = this.updateParameter('width', params, 'cube', 10, 40)
+		params = this.updateParameter('height', params, 'cube', 10, 40)
+		params = this.updateParameter('depth', params, 'cube', 10, 40)
+
+		this.shape.geometry.dispose()
+
+		this.shape.geometry = new THREE.BoxGeometry(
+			params.width, params.height, params.depth
+		)
+
+	}
+
+	updateParameter(param, parameters, shape, min, max, direction = 'normal', ease) {
 
 		parameters[param] += this.animation[shape][param]
 
@@ -123,8 +206,16 @@ class App {
 		}
 
 		if (parameters[param] > max) {
-			parameters[param] = max
-			this.animation[shape][param] = 0 - this.animation[shape][param]
+			switch(direction) {
+				case 'alternate':
+					parameters[param] = max
+					this.animation[shape][param] = 0 - this.animation[shape][param]
+					break
+				case 'normal':
+					parameters[param] = min
+					this.animation[shape][param] = 0 - this.animation[shape][param]
+					break
+			}
 		}
 
 		return parameters
