@@ -46,18 +46,20 @@
     </head>
     <body>
         <nav>
-            <a href="https://dev.arnedecant.be/threejs/shapes/?shape=cube">Cube</a>
-            <a href="https://dev.arnedecant.be/threejs/shapes/?shape=sphere">Sphere</a>
-            <a href="https://dev.arnedecant.be/threejs/shapes/?shape=cone">Cone</a>
-            <a href="https://dev.arnedecant.be/threejs/shapes/?shape=cylinder">Cylinder</a>
-            <a href="https://dev.arnedecant.be/threejs/shapes/?shape=torus">Torus</a>
+            <!-- nav filled in JS -->
         </nav>
+
         <div id="canvas"></div>
+
         <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/98/three.min.js"></script>
+
         <script src="js/app.js"></script>
         <script>
 
             document.addEventListener('DOMContentLoaded', (e) => {
+
+                const shapes = ['cube', 'sphere', 'cone', 'cylinder', 'torus']
+                fillNav(shapes)
 
                 const url = new URL(window.location.href);
                 const shape = url.searchParams.get("shape");
@@ -65,6 +67,22 @@
                 const app = new App(shape)
 
             });
+
+            function fillNav(shapes) {
+
+                const nav = document.querySelector('nav')
+                const baseUrl = window.location.href.split('?')[0]
+                let html = ''
+
+                for (let i = 0, shape; shape = shapes[i]; i++) {
+
+                    html += `<a href="${baseUrl}?shape=${shape}">${shape}</a>`
+
+                }
+
+                nav.innerHTML = html
+
+            }
 
         </script>
     </body>
