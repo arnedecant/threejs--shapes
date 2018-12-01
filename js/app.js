@@ -171,7 +171,21 @@ class App {
 
 	animateTorus(params, rotation) {
 
-		params = this.updateParameter('arc', params, 'torus', 0.1, Math.PI * 2, 'normal')
+		const self = this
+
+		// flip shape, doesn't seem to work tho
+		const onComplete = function(param, params) {
+
+			var mS = (new THREE.Matrix4()).identity()
+
+			mS.elements[0] = -1
+			mS.elements[5] = -1
+			mS.elements[10] = -1
+
+			self.shape.geometry.applyMatrix(mS)
+		}
+
+		params = this.updateParameter('arc', params, 'torus', 0.1, Math.PI * 2, 'alternate', 'linear', onComplete)
 
 		this.shape.geometry.dispose()
 
@@ -184,9 +198,9 @@ class App {
 
 	animateCube(params, rotation) {
 
-		params = this.updateParameter('width', params, 'cube', 10, 40)
-		params = this.updateParameter('height', params, 'cube', 10, 40)
-		params = this.updateParameter('depth', params, 'cube', 10, 40)
+		params = this.updateParameter('width', params, 'cube', 10, 40, 'alternate', 'lineaer')
+		params = this.updateParameter('height', params, 'cube', 10, 40, 'alternate', 'linear')
+		params = this.updateParameter('depth', params, 'cube', 10, 40, 'alternate', 'linear')
 
 		this.shape.geometry.dispose()
 
@@ -196,7 +210,7 @@ class App {
 
 	}
 
-	updateParameter(param, parameters, shape, min, max, direction = 'normal', ease) {
+	updateParameter(param, parameters, shape, min, max, direction = 'normal', ease, onComplete) {
 
 		parameters[param] += this.animation[shape][param]
 
@@ -216,6 +230,8 @@ class App {
 					this.animation[shape][param] = 0 - this.animation[shape][param]
 					break
 			}
+
+			onComplete(param, parameters)
 		}
 
 		return parameters
