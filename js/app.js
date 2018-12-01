@@ -220,6 +220,7 @@ class App {
 		}
 
 		if (parameters[param] > max) {
+
 			switch(direction) {
 				case 'alternate':
 					parameters[param] = max
@@ -231,7 +232,10 @@ class App {
 					break
 			}
 
-			onComplete(param, parameters)
+			if (onComplete && typeof onComplete === 'function') {
+				onComplete(param, parameters)
+			}
+			
 		}
 
 		return parameters
